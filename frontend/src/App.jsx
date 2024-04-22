@@ -17,12 +17,24 @@ import AuthenticationPage, {
   action as authAction,
 } from './pages/Authentication';
 import { action as logoutAction } from './pages/Logout';
+import { tokenLoader } from './util/auth';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
     errorElement: <ErrorPage />,
+    // extract token from local storage and be availble through the loader data
+    // of that root route in all other routes
+    // React Router will automatically evenaluate that if we for example, logout
+    // form. So it will then refetch that token and for example determine that the
+    // token doesn't exist and then update all the pages that use the loader data
+    // from the root route
+    // So this is a very reactive solution.
+    loader: tokenLoader,
+    // In order to use data from this tokenLoader and easily get access to it,
+    // we'll assign an id to that route
+    id: 'root',
     children: [
       { index: true, element: <HomePage /> },
       {
