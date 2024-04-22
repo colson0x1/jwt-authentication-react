@@ -45,6 +45,19 @@ export async function action({ request }) {
     throw json({ message: 'Could not authenticate user.' }, { status: 500 });
   }
 
+  // Before we redirect the user away, we wanna extract that token from the
+  // response form backend
+  const resData = await response.json();
+  const token = resData.token;
+
+  // store token now so that we can use it
+  // we could try to store it in memory somehow. we could store it in a cookie.
+  // but a very simple and straightforward option is to store it in
+  // local storage, which is a browser API which we can use here because
+  // this code in this action function runs in the browser.
+  // So we can use all standard browser features here.
+  localStorage.setItem('token', token);
+
   // if we make it past all above, the signup did succeed
   // soon: we will have to manage that token which we get back from the backend
   return redirect('/');
