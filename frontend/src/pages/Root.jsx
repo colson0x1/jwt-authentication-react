@@ -2,6 +2,7 @@ import { Outlet, useLoaderData, useSubmit } from 'react-router-dom';
 
 import MainNavigation from '../components/MainNavigation';
 import { useEffect } from 'react';
+import { getTokenDuration } from '../util/auth';
 
 function RootLayout() {
   // we don't even need to use useRouteLoaderData and use the id of the route
@@ -35,21 +36,26 @@ function RootLayout() {
       return;
     }
 
+    if (token === 'EXPIRED') {
+      submit(null, { action: '/logout', method: 'POST' });
+      // thereafter we can return because we don't need to set any timer thereafter
+      return;
+    }
+
+    const tokenDuration = getTokenDuration();
+    console.log(tokenDuration);
+
     // if we do have a token, we wanna set up a timer after 1 hr and then triggers
     // that logout action
-    setTimeout(
-      () => {
-        // once timer expires, we call submit
-        // we wont pass any data because there is no data to submit
-        // but we'll target this /logout action, this logout route, the action that
-        // belongs to that route and set the method to POST
-        // And that will therefore trigger that logout route and well start that
-        // logout process where we clear the token
-        submit(null, { action: '/logout', method: 'POST' });
-      },
-      // 1 hr in milliseconds
-      1 * 60 * 60 * 1000,
-    );
+    setTimeout(() => {
+      // once timer expires, we call submit
+      // we wont pass any data because there is no data to submit
+      // but we'll target this /logout action, this logout route, the action that
+      // belongs to that route and set the method to POST
+      // And that will therefore trigger that logout route and well start that
+      // logout process where we clear the token
+      submit(null, { action: '/logout', method: 'POST' });
+    }, tokenDuration);
   }, [token, submit]);
 
   return (

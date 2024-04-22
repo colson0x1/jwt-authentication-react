@@ -56,7 +56,27 @@ export async function action({ request }) {
   // local storage, which is a browser API which we can use here because
   // this code in this action function runs in the browser.
   // So we can use all standard browser features here.
+
+  /* @ Problem with current approach!
+   * The flaw of that solution is: At the moment, we always expired a token
+   * after 1 hr. the problem with that approach is, we of course might have
+   * logged in. Then we were away for 10 minutes. Then we reloaded this
+   * application. And therefore, this effect was triggered again.
+   * We found a token in the local storage because we did log in 10 minutes ago,
+   * but now we reset that timer to 1 hr ago. That's not realistic because
+   * the token is arleady 10 minutes old so it will actually expire in
+   * 50 minutes, and the backend won't accept it anymore thereafter but our
+   * timer is set to 1 hr
+   */
+
+  // Here we should also store the expiration time because this code
+  // executes when we first get a token
+  // Therefore here we know for sure that the token will expire in 1 hr
   localStorage.setItem('token', token);
+  const expiration = new Date();
+  // creates a date that's one hour in the future
+  expiration.setHours(expiration.getHours() + 1);
+  localStorage.setItem('expiration', expiration.toISOString());
 
   // if we make it past all above, the signup did succeed
   // soon: we will have to manage that token which we get back from the backend
