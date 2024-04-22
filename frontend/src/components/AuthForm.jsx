@@ -1,8 +1,22 @@
-import { Form, Link, useSearchParams } from 'react-router-dom';
+import {
+  Form,
+  Link,
+  useSearchParams,
+  useActionData,
+  useNavigation,
+} from 'react-router-dom';
 
 import classes from './AuthForm.module.css';
 
+// get data returned by action data with useActionData hook
 function AuthForm() {
+  // we only get the data if our action returns something.
+  // something else then a redirect
+  const data = useActionData();
+  // figure weather or not we're currently submitting
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === 'submitting';
+
   // query parameters are officially called search parameters
   // useSearchParams hook allows us to get access to the currently set query
   // parameters.
@@ -19,6 +33,14 @@ function AuthForm() {
     <>
       <Form method='post' className={classes.form}>
         <h1>{isLogin ? 'Log in' : 'Create a new user'}</h1>
+        {data && data.errors && (
+          <ul>
+            {Object.values(data.errors).map((err) => (
+              <li key={err}>{err}</li>
+            ))}
+          </ul>
+        )}
+        {data && data.message && <p>{data.message}</p>}
         <p>
           <label htmlFor='email'>Email</label>
           <input id='email' type='email' name='email' required />
@@ -31,7 +53,9 @@ function AuthForm() {
           <Link to={`?mode=${isLogin ? 'signup' : 'login'}`}>
             {isLogin ? 'Create new user' : 'Login'}
           </Link>
-          <button>Save</button>
+          <button disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : 'Save'}
+          </button>
         </div>
       </Form>
     </>
